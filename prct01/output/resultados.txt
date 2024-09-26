@@ -1,0 +1,38 @@
+──────────────────────────────────────────────────
+Número de nodos del grafo: 15
+Número de aristas del grafo: 19
+Vértice origen: 1
+Vértice destino: 5
+──────────────────────────────────────────────────
+Iteración 1
+Nodos Generados: 1
+Nodos Inspeccionados: -
+──────────────────────────────────────────────────
+Iteración 2
+Nodos Generados: 1, 2, 3
+Nodos Inspeccionados: 1
+──────────────────────────────────────────────────
+Iteración 3
+Nodos Generados: 1, 2, 3, 4
+Nodos Inspeccionados: 1, 2
+──────────────────────────────────────────────────
+Iteración 4
+Nodos Generados: 1, 2, 3, 4, 11
+Nodos Inspeccionados: 1, 2, 3
+──────────────────────────────────────────────────
+Iteración 5
+Nodos Generados: 1, 2, 3, 4, 11, 6, 12
+Nodos Inspeccionados: 1, 2, 3, 4
+──────────────────────────────────────────────────
+Iteración 6
+Nodos Generados: 1, 2, 3, 4, 11, 6, 12
+Nodos Inspeccionados: 1, 2, 3, 4, 11
+──────────────────────────────────────────────────
+Iteración 7
+Nodos Generados: 1, 2, 3, 4, 11, 6, 12, 5
+Nodos Inspeccionados: 1, 2, 3, 4, 11, 6
+──────────────────────────────────────────────────
+Camino: 1 - 2 - 4 - 6 - 5
+──────────────────────────────────────────────────
+Costo: 31
+──────────────────────────────────────────────────
