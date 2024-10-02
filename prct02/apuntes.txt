@@ -1,0 +1,57 @@
+Utiliza informacion del problema para generar el arbol de busqueda. 
+La busqueda está guiada por la informacion que nos aporta la funcion heuristica, pudiendo evitar la busqueda en amplitud y profundidad.
+
+Esta busqueda (A*) es completa porque si hay una solución, la encuentra.
+También es óptima.
+Tiene que cumplir la condición de ser finito.
+
+Nos preguntamos en primera instancia si es el estado meta, si no lo es; generamos sus sucesores.
+
+Calculamos la funcion de coste f(n) que se compone de dos términos: g(n) y h(n).
+
+g(n) es el coste real del camino que llevo recorrido desde la raiz hasta el nodo n.
+h(n) es la estimación al camino final desde el nodo n.
+Condición para ser optima:
+Tiene que ser menor o igual que el coste real de llegar del nodo n al nodo meta (heuristica admisible).
+h(n) debe ser admisible.
+
+generamos todos los f(n) de los nodos generados en cada iteracion.
+el nodo raiz será entonces ahora conjunto de un nodo cerrado.
+escogemos (de los generados) el valor de f(n) más pequeño.
+
+Inspeccionamos ese nodo y si no es el nodo meta, generamos sus sucesores.
+Obtenemos todos los f(n) de los generados (es decir, su g(n) y h(n)).
+Debemos poder guardar al nodo padre para obtener el camino posteriormente.
+
+Nodos cerrados: raiz
+Nodos abiertos: los demás.
+
+Si nos aparecen dos nodos iguales en los nodos abiertos porque existen en ramas distintas,
+nos quedamos con el f(n) mas pequeño, por ende, actualizamos (si es necesario) ese nodo abierto.
+
+Para obtener el nodo meta, puede resultar en un f(n) diferente por ambos caminos.
+Nos quedamos con el f(n) menor y verificamos que sea el menor valor de los f(n), es decir,
+no hay f(n) más pequeño de los nodos abiertos. Si hay un f(n) que pertenece a otro nodo (no necesariamente el meta)
+y es menor, elegimos ese nodo para examinarlo pues puede ser que en ese camino exista un f(n) para el meta menor que
+el que ya tenemos.
+
+Hay que implementar una heuristica admisible adicional.
+
+Debemos dibujar, a parte de las iteraciones, la matriz resultante.
+Debemos tener una memoria donde expliquemos la heuristica nuestra admisible.
+
+Si no existe salida imprimimos: no existe salida del laberinto.
+
+Modificacion:
+Se prestan dos laberintos diferentes donde debemos poder cambiar la entrada y salida (3 y 4, respectivamente).
+Por teclado se debe permitir el cambio de entrada y salida.
+
+Defendemos nuestra práctica.
+¿De tus dos heuristicas, cual es mejor y por qué?
+
+ITERACIONES:
+-------------
+IT 1
+NG: 1
+NI: -
+-------------
