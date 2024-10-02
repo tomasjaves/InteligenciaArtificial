@@ -35,3 +35,4 @@ build/%.o: src/%.cpp
 clean:
 	@echo "${RED}$(BOLD)Limpieza en progreso: eliminando archivos de compilación y ejecutables...$(RESET)${GRAY}"
 	rm -rf $(OBJ) $(EXEC)
+	> output/resultados.txt
