@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -Wall -Werror -Wextra -pedantic -std=c++17
 
-SRC = src/busqueda_amplitud.cpp src/busqueda_profundidad.cpp src/grafo.cpp src/main.cpp
+SRC = src/busqueda_amplitud.cpp src/busqueda_profundidad.cpp src/busqueda_comun.cpp src/grafo.cpp src/main.cpp
 OBJ = $(SRC:src/%.cpp=build/%.o)
 EXEC = program
 

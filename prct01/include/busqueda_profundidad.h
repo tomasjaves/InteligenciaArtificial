@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../include/grafo.h"
+#include "grafo.h"
+#include "busqueda_comun.h"
 #include <stack>
 #include <unordered_map>
 #include <limits>
@@ -9,4 +10,4 @@
 #include <fstream>
 
 // Función que implementa la búsqueda en profundidad (DFS).
-std::vector<int> BusquedaEnProfundidad(const Grafo&, int, int, double&, std::ofstream&);
+std::vector<int> BusquedaEnProfundidad(const Grafo&, int, int, int&, std::ofstream&);

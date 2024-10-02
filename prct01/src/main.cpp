@@ -34,7 +34,7 @@ void MostrarCamino(const std::vector<int>& camino, double costo_total,
                    int origen, int destino, std::ofstream& archivo_salida) {
   // Mostramos el camino encontrado.
   if (camino.empty()) {
-    archivo_salida << "No se encontró un camino entre los vértices " << origen << " y " << destino << std::endl;
+    archivo_salida << "No se encontró un camino entre los vértices " << origen << " y " << destino;
   } else {
     archivo_salida << "Camino: ";
     for (long unsigned i = 0; i < camino.size(); ++i) {
@@ -111,6 +111,7 @@ std::vector<std::string> ListarArchivos(const std::string& path) {
 int main() {
   LimpiarPantalla();
   std::cout << GRAY << BOLD << "Práctica 1: Búsquedas no informadas" << RESET << std::endl;
+  
   // Mostramos el menú de opciones.
   int opcion;
   MostrarMenu();
@@ -132,6 +133,7 @@ int main() {
     std::cerr << RED << "No se encontraron archivos en el directorio 'input'." << RESET << std::endl;
     return 1;
   }
+
   // Mostramos los archivos y permitir al usuario seleccionar uno
   std::cout << ITALIC << "Seleccione un archivo de entrada:" << RESET << std::endl;
   for (size_t i = 0; i < archivos.size(); ++i) {
@@ -180,7 +182,7 @@ int main() {
   grafo->MostrarInformacion(origen, destino, archivo_salida);
 
   // Inicializamos el coste total del camino.
-  double costo_total = 0;
+  int costo_total = 0;
 
   // Realizamos la búsqueda según la opción seleccionada.
   if (opcion == 1) { // Búsqueda en amplitud.

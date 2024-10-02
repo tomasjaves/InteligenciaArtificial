@@ -19,13 +19,13 @@ class Grafo {
 
   int ObtenerNumeroAristas() const;
   int ObtenerNumeroVertices() const;
-  const std::vector<std::vector<double>>& ObtenerMatrizCoste() const;
-    
+  const std::vector<std::vector<int>>& ObtenerMatrizCoste() const;
+
   void MostrarGrafo() const;
   void MostrarInformacion(const int&, const int&, std::ofstream&) const;
 
  private:
   int num_vertices_;  // Número de vértices en el grafo.
   int num_aristas_;  // Número de aristas en el grafo.
-  std::vector<std::vector<double>> matriz_adyacencia_;  // Matriz de adyacencia.
+  std::vector<std::vector<int>> matriz_adyacencia_;  // Matriz de adyacencia.
 };

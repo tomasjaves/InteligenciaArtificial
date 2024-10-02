@@ -10,7 +10,7 @@
  * @param archivo_salida 
  * @return std::vector<int> 
  */
-std::vector<int> BusquedaEnAmplitud(const Grafo& grafo, int origen, int destino, double& costo_total, std::ofstream& archivo_salida) {
+std::vector<int> BusquedaEnAmplitud(const Grafo& grafo, const int& origen, const int& destino, int& costo_total, std::ofstream& archivo_salida) {
   // Creamos un vector para almacenar el camino.
   std::vector<int> camino;
 
@@ -22,10 +22,10 @@ std::vector<int> BusquedaEnAmplitud(const Grafo& grafo, int origen, int destino,
   }
 
   // Estructuras para manejar la búsqueda.
-  std::queue<int> cola;  // Cola para manejar la BFS.
-  std::unordered_map<int, int> padre;  // Para rastrear el camino.
-  std::unordered_map<int, double> distancia;  // Para mantener la distancia mínima.
-  std::unordered_map<int, bool> visitado;  // Para saber si un nodo ya fue visitado.
+  std::queue<int> cola;  // Cola para manejar BFS.
+  std::unordered_map<int, bool> visitado;  // Para saber si un nodo ya fue visitado. Clave: nodo, Valor: visitado.
+  std::unordered_map<int, int> distancia;  // Para mantener la distancia mínima. Clave: nodo, Valor: distancia.
+  std::unordered_map<int, int> padre;  // Para rastrear el camino. Clave: nodo, Valor: padre.
 
   // Inicializamos las estructuras.
   cola.push(origen);
@@ -41,44 +41,23 @@ std::vector<int> BusquedaEnAmplitud(const Grafo& grafo, int origen, int destino,
   // El nodo origen es generado al principio.
   nodos_generados.push_back(origen);
 
-  // Realizar la búsqueda en amplitud.
+  // Realizamos la búsqueda en amplitud.
   while (!cola.empty()) {
     int nodo_actual = cola.front();
     cola.pop();
 
     // Mostrar información de la iteración.
-    ++iteracion;
-    archivo_salida << "Iteración " << iteracion << std::endl;
-    archivo_salida << "Nodos Generados: ";
-    for (int nodo : nodos_generados) {
-      archivo_salida << nodo + 1;  // Mostrar nodos indexados a partir de 1.
-      if (nodo != nodos_generados.back()) {
-        archivo_salida << ", ";
-      }
-    }
-    archivo_salida << "\nNodos Inspeccionados: ";
-    if (nodos_inspeccionados.size() >= 1) {
-      for (unsigned i = 0; i < nodos_inspeccionados.size(); ++i) {
-        archivo_salida << nodos_inspeccionados[i] + 1;  // Mostrar nodos indexados a partir de 1.
-        if (i < nodos_inspeccionados.size() - 1) {
-          archivo_salida << ", ";
-        }
-      }
-    } else {
-      archivo_salida << "-";
-    }
-    archivo_salida << std::endl;
-    archivo_salida << "──────────────────────────────────────────────────" << std::endl;
+    InformacionIteracion(iteracion, nodos_generados, nodos_inspeccionados, archivo_salida);
 
     // Agregamos el nodo actual a los nodos inspeccionados.
     nodos_inspeccionados.push_back(nodo_actual);
 
     // Obtenemos los vecinos del nodo actual.
-    const std::vector<double>& vecinos = grafo.ObtenerMatrizCoste()[nodo_actual];
+    const std::vector<int>& vecinos = grafo.ObtenerMatrizCoste()[nodo_actual];
     
     // Iteramos sobre los vecinos.
     for (unsigned i = 0; i < vecinos.size(); ++i) {
-      double costo = vecinos[i];  // Almacenamos el costo de ir del nodo actual al vecino i.
+      int costo = vecinos[i];  // Almacenamos el costo de ir del nodo actual al vecino i.
 
       // Si hay conexión y no ha sido visitado.
       if (costo != -1 && !visitado[i]) {
@@ -89,36 +68,21 @@ std::vector<int> BusquedaEnAmplitud(const Grafo& grafo, int origen, int destino,
         distancia[i] = distancia[nodo_actual] + costo;
 
         // Agregamos el vecino a los nodos generados.
-        nodos_generados.push_back(i);
+        InsertarMenorAMayor(nodos_generados, i);
 
         // Si hemos encontrado el destino.
         if (i == unsigned(destino)) {
-          // Mostrar información adicional antes de terminar.
-          ++iteracion;
-          archivo_salida << "Iteración " << iteracion << std::endl;
-          archivo_salida << "Nodos Generados: ";
-          for (int nodo : nodos_generados) {
-            archivo_salida << nodo + 1;  // Mostrar nodos indexados a partir de 1.
-            if (nodo != nodos_generados.back()) {
-              archivo_salida << ", ";
-            }
-          }
-          archivo_salida << "\nNodos Inspeccionados: ";
-          for (int nodo : nodos_inspeccionados) {
-            archivo_salida << nodo + 1;  // Mostrar nodos indexados a partir de 1.
-            if (nodo != nodos_inspeccionados.back()) {
-              archivo_salida << ", ";
-            }
-          }
-          archivo_salida << std::endl;
-          archivo_salida << "──────────────────────────────────────────────────" << std::endl;
+          // Mostramos información adicional antes de terminar.
+          InformacionIteracion(iteracion, nodos_generados, nodos_inspeccionados, archivo_salida);
 
           // El costo total es la distancia acumulada al nodo destino.
           costo_total = distancia[i];
-          int nodo = destino;
 
           // Reconstruimos el camino desde el destino al origen.
+          int nodo = destino;
+          // Mientras no lleguemos al origen (nodo raíz)
           while (nodo != -1) {
+            // Agregamos el nodo al camino y actualizamos el nodo actual al padre y repetimos.
             camino.push_back(nodo);
             nodo = padre[nodo];
           }
@@ -131,6 +95,6 @@ std::vector<int> BusquedaEnAmplitud(const Grafo& grafo, int origen, int destino,
   }
 
   // Si no encontramos un camino, devolvemos un vector vacío y un costo de infinito.
-  costo_total = std::numeric_limits<double>::infinity();
+  costo_total = std::numeric_limits<int>::infinity();
   return {};
 }

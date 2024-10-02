@@ -11,7 +11,7 @@
  */
 Grafo::Grafo(int num_vertices) : num_vertices_(num_vertices) {
   // Inicializamos la matriz de adyacencia con -1 (sin conexión).
-  matriz_adyacencia_.resize(num_vertices_, std::vector<double>(num_vertices_, -1));
+  matriz_adyacencia_.resize(num_vertices_, std::vector<int>(num_vertices_, -1));
   // Por cada vértice, la distancia a sí mismo es 0.
   for (int i = 0; i < num_vertices_; ++i) {
     matriz_adyacencia_[i][i] = 0;
@@ -45,7 +45,7 @@ void Grafo::CargarDesdeArchivo(const std::string& nombre_archivo) {
   int fila = 0, columna = 1, aristas = 0;  // Comenzamos en la primera fila, segunda columna.
   while (std::getline(archivo, linea)) {
     std::istringstream iss(linea);
-    double costo;
+    int costo;
     iss >> costo;  // Leemos el costo de la arista.
 
     // Agregamos la arista si hay conexión (costo != -1).
@@ -81,18 +81,30 @@ void Grafo::AgregarArista(int origen, int destino, double costo) {
   }
 }
 
-// Retorna el número de aristas del grafo.
+/**
+ * @brief Función para obtener el número de aristas del grafo.
+ * 
+ * @return int 
+ */
 int Grafo::ObtenerNumeroAristas() const {
   return num_aristas_;
 }
 
-// Retorna el número de vértices del grafo.
+/**
+ * @brief Función para obtener el número de vértices del grafo.
+ * 
+ * @return int 
+ */
 int Grafo::ObtenerNumeroVertices() const {
   return num_vertices_;
 }
 
-// Retorna la matriz de adyacencia del grafo.
-const std::vector<std::vector<double>>& Grafo::ObtenerMatrizCoste() const {
+/**
+ * @brief Función para obtener la matriz de adyacencia del grafo.
+ * 
+ * @return const std::vector<std::vector<double>>& 
+ */
+const std::vector<std::vector<int>>& Grafo::ObtenerMatrizCoste() const {
   return matriz_adyacencia_;
 }
 

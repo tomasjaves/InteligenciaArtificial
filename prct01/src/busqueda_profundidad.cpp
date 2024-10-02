@@ -18,38 +18,17 @@
  * @return true 
  * @return false 
  */
-bool DFSRecursivo(const Grafo& grafo, int nodo_actual, int destino, std::unordered_map<int, bool>& visitado, 
-                  std::vector<int>& camino, double& costo_actual, double& costo_total,
-                  std::unordered_map<int, double>& distancia, std::unordered_map<int, int>& padre,
-                  std::vector<int>& nodos_generados, std::vector<int>& nodos_inspeccionados, int& iteracion,
-                  std::ofstream& archivo_salida) {
+bool DFSRecursivo(const Grafo& grafo, const int& nodo_actual, const int& destino,
+                  std::unordered_map<int, bool>& visitado, std::vector<int>& camino, int& costo_actual,
+                  int& costo_total, std::unordered_map<int, int>& distancia,
+                  std::unordered_map<int, int>& padre, std::vector<int>& nodos_generados, 
+                  std::vector<int>& nodos_inspeccionados, int& iteracion, std::ofstream& archivo_salida) {
   // Marcamos el nodo actual como visitado.
   visitado[nodo_actual] = true;
   camino.push_back(nodo_actual);
 
   // Mostramos información de la iteración en el archivo de salida.
-  ++iteracion;
-  archivo_salida << "Iteración " << iteracion << std::endl;
-  archivo_salida << "Nodos Generados: ";
-  for (int nodo : nodos_generados) {
-    archivo_salida << nodo + 1;  // Para mostrar como nodos 1-indexados.
-    if (nodo != nodos_generados.back()) {
-      archivo_salida << ", ";
-    }
-  }
-  archivo_salida << "\nNodos Inspeccionados: ";
-  if (nodos_inspeccionados.size() >= 1) {
-    for (unsigned i = 0; i < nodos_inspeccionados.size(); ++i) {
-      archivo_salida << nodos_inspeccionados[i] + 1;  // Para mostrar como nodos 1-indexados.
-      if (i < nodos_inspeccionados.size() - 1) {
-        archivo_salida << ", ";
-      }
-    }
-  } else {
-    archivo_salida << "-";
-  }
-  archivo_salida << std::endl;
-  archivo_salida << "──────────────────────────────────────────────────" << std::endl;
+  InformacionIteracion(iteracion, nodos_generados, nodos_inspeccionados, archivo_salida);
 
   // Añadimos el nodo actual a los nodos inspeccionados.
   nodos_inspeccionados.push_back(nodo_actual);
@@ -61,14 +40,16 @@ bool DFSRecursivo(const Grafo& grafo, int nodo_actual, int destino, std::unorder
   }
 
   // Obtenemos los vecinos del nodo actual.
-  const auto& vecinos = grafo.ObtenerMatrizCoste()[nodo_actual];
+  const std::vector<int>& vecinos = grafo.ObtenerMatrizCoste()[nodo_actual];
+  // Iteramos sobre los vecinos.
   for (unsigned i = 0; i < vecinos.size(); ++i) {
-    double costo = vecinos[i];
+    // Obtenemos el costo de ir al vecino.
+    int costo = vecinos[i];
     // Si hay conexión y no ha sido visitado.
     if (costo != -1 && !visitado[i]) {
       costo_actual += costo;
       padre[i] = nodo_actual;
-      nodos_generados.push_back(i);  // Registramos nodo generado.
+      InsertarMenorAMayor(nodos_generados, i);  // Registramos nodo generado.
       if (DFSRecursivo(grafo, i, destino, visitado, camino, costo_actual, costo_total, distancia, padre, nodos_generados, nodos_inspeccionados, iteracion, archivo_salida)) {
         return true;  // Si encontramos el camino, retornamos verdadero.
       }
@@ -91,14 +72,26 @@ bool DFSRecursivo(const Grafo& grafo, int nodo_actual, int destino, std::unorder
  * @param costo_total 
  * @return std::vector<int> 
  */
-std::vector<int> BusquedaEnProfundidad(const Grafo& grafo, int origen, int destino, double& costo_total, std::ofstream& archivo_salida) {
+std::vector<int> BusquedaEnProfundidad(const Grafo& grafo, int origen, int destino, int& costo_total, std::ofstream& archivo_salida) {
+  // Creamos un vector para almacenar el camino.
   std::vector<int> camino;
-  std::unordered_map<int, bool> visitado;
-  std::unordered_map<int, double> distancia;  // Para mantener la distancia acumulada.
-  std::unordered_map<int, int> padre;  // Para rastrear el camino.
-  double costo_actual = 0;
-  
-  costo_total = std::numeric_limits<double>::infinity();  // Inicializar el costo total con infinito.
+
+  // Si el origen y el destino son iguales, devolvemos el origen.
+  if (origen == destino) {
+    camino.push_back(origen);
+    costo_total = 0;
+    return camino;
+  }
+
+  // Estrucutras para manejar la búsqueda.
+  std::unordered_map<int, bool> visitado; // Para saber si un nodo ya fue visitado. Clave: nodo, Valor: visitado.
+  std::unordered_map<int, int> distancia;  // Para mantener la distancia acumulada. Clave: nodo, Valor: distancia.
+  std::unordered_map<int, int> padre;  // Para rastrear el camino. Clave: nodo, Valor: padre.
+  int costo_actual = 0; // Costo actual del camino.
+
+  visitado[origen] = true;
+  distancia[origen] = 0;
+  padre[origen] = -1;  // El nodo inicial no tiene padre.
 
   std::vector<int> nodos_generados;  // Para almacenar los nodos generados en cada iteración.
   std::vector<int> nodos_inspeccionados;  // Para almacenar los nodos inspeccionados en cada iteración.
@@ -111,6 +104,7 @@ std::vector<int> BusquedaEnProfundidad(const Grafo& grafo, int origen, int desti
   if (DFSRecursivo(grafo, origen, destino, visitado, camino, costo_actual, costo_total, distancia, padre, nodos_generados, nodos_inspeccionados, iteracion, archivo_salida)) {
     return camino;  // Si encontramos el camino, retornamos el camino.
   } else {
+    costo_total = std::numeric_limits<int>::infinity();
     return {};  // Si no encontramos el camino, retornamos un vector vacío.
   }
 }
