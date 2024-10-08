@@ -10,12 +10,19 @@ Nodo::Nodo() : id_(-1), pos_padre_(-1), coste_(0), padre_(nullptr), profundidad_
  * @brief Constructor de la clase Nodo.
  * 
  * @param id ID del nodo.
+ */
+Nodo::Nodo(const int& id) : id_(id), pos_padre_(-1), coste_(0), padre_(nullptr), profundidad_(0) {}
+
+/**
+ * @brief Constructor de la clase Nodo.
+ * 
+ * @param id ID del nodo.
  * @param pos_padre Posición del padre en la estructura de nodos.
  * @param coste Coste de la arista hacia este nodo.
  * @param padre ID del nodo padre.
  * @param profundidad Profundidad del nodo en el árbol.
  */
-Nodo::Nodo(int id, int pos_padre, int coste, Nodo* padre, int profundidad) 
+Nodo::Nodo(const int& id, const int& pos_padre, const int& coste, Nodo* padre, const int& profundidad) 
   : id_(id), pos_padre_(pos_padre), coste_(coste), padre_(padre), profundidad_(profundidad) {}
 
 /**

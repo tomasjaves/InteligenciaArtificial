@@ -1,6 +1,5 @@
 #include "../include/grafo.h"
-#include "../include/busqueda_amplitud.h"
-#include "../include/busqueda_profundidad.h"
+#include "../include/busqueda.h"
 #include <iostream>
 #include <thread>  // Para usar std::this_thread::sleep_for
 #include <chrono>  // Para usar std::chrono::milliseconds
@@ -30,7 +29,7 @@
  * @param destino 
  * @param archivo_salida 
  */
-void MostrarCamino(const std::vector<int>& camino, double costo_total, 
+void MostrarCamino(const std::vector<Nodo>& camino, double costo_total, 
                    int origen, int destino, std::ofstream& archivo_salida) {
   // Mostramos el camino encontrado.
   if (camino.empty()) {
@@ -38,7 +37,7 @@ void MostrarCamino(const std::vector<int>& camino, double costo_total,
   } else {
     archivo_salida << "Camino: ";
     for (long unsigned i = 0; i < camino.size(); ++i) {
-      archivo_salida << camino[i]+1;
+      archivo_salida << camino[i].GetID()+1;
       if (i < camino.size()-1) {
         archivo_salida << " - ";
       }
@@ -177,7 +176,7 @@ int main() {
     return 1;
   }
 
-  std::vector<int> camino;
+  std::vector<Nodo> camino;
   // Mostramos datos del grafo.
   grafo->MostrarInformacion(origen, destino, archivo_salida);
 
@@ -186,13 +185,13 @@ int main() {
 
   // Realizamos la búsqueda según la opción seleccionada.
   if (opcion == 1) { // Búsqueda en amplitud.
-    BusquedaEnAmplitud(*grafo, origen-1, destino-1, costo_total, archivo_salida);
+    camino = Busqueda::BusquedaEnAmplitud(*grafo, origen-1, destino-1, costo_total, archivo_salida);
   } else if (opcion == 2) { // Búsqueda en profundidad.
-    camino = BusquedaEnProfundidad(*grafo, origen-1, destino-1, costo_total, archivo_salida);
-    // Mostramos el camino y el costo total.
-    MostrarCamino(camino, costo_total, origen, destino, archivo_salida);
+    camino = Busqueda::BusquedaEnProfundidad(*grafo, origen-1, destino-1, costo_total, archivo_salida);
   }
 
+  // Mostramos el camino y el costo total.
+  MostrarCamino(camino, costo_total, origen, destino, archivo_salida);
   std::cout << GREEN << "Resultado depositado en archivo " << BOLD << "'output/resultados.txt'." << RESET << std::endl;
   
   // Cerrar el archivo de salida.

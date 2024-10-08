@@ -4,7 +4,8 @@ class Nodo {
  public:
   // Constructor por defecto
   Nodo();
-  Nodo(int, int, int, Nodo*, int);
+  Nodo(const int&);
+  Nodo(const int&, const int&, const int&, Nodo*, const int&);
 
   // Métodos getter y setter para acceder a los atributos
   int GetID() const;
@@ -23,9 +24,9 @@ class Nodo {
   bool operator==(const Nodo&) const;
 
  private:
-  int id_;           // ID del nodo
+  int id_;            // ID del nodo
   int pos_padre_;     // Posición del padre en la estructura de nodos
   int coste_;         // Coste de la arista hacia este nodo
-  Nodo* padre_;         // ID del nodo padre
+  Nodo* padre_;       // ID del nodo padre
   int profundidad_;   // Profundidad del nodo en el árbol
 };
