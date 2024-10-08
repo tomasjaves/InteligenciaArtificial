@@ -1,9 +1,5 @@
 #include "../include/grafo.h"
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-
 /**
  * @brief Constructor para inicializar el grafo con un número de vértices dado.
  * 
@@ -23,7 +19,8 @@ Grafo::Grafo(int num_vertices) : num_vertices_(num_vertices) {
  * 
  * @param nombre_archivo 
  */
-void Grafo::CargarDesdeArchivo(const std::string& nombre_archivo) {
+Grafo::Grafo(const std::string& nombre_archivo) {
+  *this = Grafo(0);  // Inicializamos el grafo con 0 vértices.
   std::string ruta = "input/" + nombre_archivo;
   // Abrimos el archivo.
   std::ifstream archivo(ruta);

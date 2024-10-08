@@ -4,14 +4,14 @@
  * @brief Constructor por defecto de la clase Nodo.
  * 
  */
-Nodo::Nodo() : id_(-1), pos_padre_(-1), coste_(0), padre_(nullptr), profundidad_(0) {}
+Nodo::Nodo() : id_(-1), pos_padre_(-1), coste_(0), padre_(nullptr) {}
 
 /**
  * @brief Constructor de la clase Nodo.
  * 
  * @param id ID del nodo.
  */
-Nodo::Nodo(const int& id) : id_(id), pos_padre_(-1), coste_(0), padre_(nullptr), profundidad_(0) {}
+Nodo::Nodo(const int& id) : id_(id), pos_padre_(-1), coste_(0), padre_(nullptr) {}
 
 /**
  * @brief Constructor de la clase Nodo.
@@ -22,8 +22,8 @@ Nodo::Nodo(const int& id) : id_(id), pos_padre_(-1), coste_(0), padre_(nullptr),
  * @param padre ID del nodo padre.
  * @param profundidad Profundidad del nodo en el árbol.
  */
-Nodo::Nodo(const int& id, const int& pos_padre, const int& coste, Nodo* padre, const int& profundidad) 
-  : id_(id), pos_padre_(pos_padre), coste_(coste), padre_(padre), profundidad_(profundidad) {}
+Nodo::Nodo(const int& id, const int& pos_padre, const int& coste, Nodo* padre) 
+  : id_(id), pos_padre_(pos_padre), coste_(coste), padre_(padre) {}
 
 /**
  * @brief Método getter para obtener el ID del nodo.
@@ -54,13 +54,6 @@ Nodo* Nodo::GetPadre() const { return padre_; }
 int Nodo::GetPosPadre() const { return pos_padre_; }
 
 /**
- * @brief Método getter para obtener la profundidad del nodo en el árbol.
- * 
- * @return int 
- */
-int Nodo::GetProfundidad() const { return profundidad_; }
-
-/**
  * @brief Método setter para establecer el ID del nodo.
  * 
  * @param id ID del nodo.
@@ -87,13 +80,6 @@ void Nodo::SetPadre(Nodo* padre) { padre_ = padre; }
  * @param pos_padre Posición del padre en la estructura de nodos.
  */
 void Nodo::SetPosPadre(int pos_padre) { pos_padre_ = pos_padre; }
-
-/**
- * @brief Método setter para establecer la profundidad del nodo en el árbol.
- * 
- * @param profundidad Profundidad del nodo en el árbol.
- */
-void Nodo::SetProfundidad(int profundidad) { profundidad_ = profundidad; }
 
 /**
  * @brief Sobrecarga del operador == para comparar nodos por su ID.

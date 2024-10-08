@@ -139,7 +139,6 @@ std::vector<Nodo> Busqueda::BusquedaEnAmplitud(const Grafo& grafo, const int& id
 						nuevo_nodo.SetPosPadre(i);					// Almacenamos en qué posición está el padre.
 						nuevo_nodo.SetCoste(vecinos[j]);		// Coste de la conexión
 						nuevo_nodo.SetPadre(&recorrido[i]); // El padre es el nodo actual
-						nuevo_nodo.SetProfundidad(recorrido[i].GetProfundidad() + 1);
 
 						recorrido.push_back(nuevo_nodo);
 						generados.push_back(nuevo_nodo); // Añadimos el nodo generado
@@ -192,78 +191,89 @@ std::vector<Nodo> Busqueda::BusquedaEnAmplitud(const Grafo& grafo, const int& id
  * @param file 
  * @return std::vector<Nodo> 
  */
-std::vector<Nodo> Busqueda::BusquedaEnProfundidad(const Grafo& grafo, const int& nodo_origen, 
-                                                  const int& nodo_destino, int& costo_total, std::ofstream& file) {
-  std::stack<Nodo> pila; // Pila para almacenar los nodos
-  std::set<int> visitados; // Conjunto para almacenar los nodos visitados
-  std::unordered_map<int, int> camino; // Mapa para almacenar el camino
-  std::vector<Nodo> inspeccionados, generados, camino_final; // Vectores para almacenar información
-  int iteracion = 1;
+std::vector<Nodo> Busqueda::BusquedaEnProfundidad(const Grafo& grafo, const int& id_origen, const int& id_destino, int& costo_total, std::ofstream& archivo_salida) {
+  // Creamos una pila para gestionar la búsqueda
+  std::stack<Nodo*> pila;
 
-  // Inicializamos la pila con el nodo origen
-  Nodo nodo_inicial(nodo_origen);
-  pila.push(nodo_inicial);
-  // Añadimos el nodo origen a los nodos generados
-  generados.push_back(nodo_origen);
-    
-  // Mostramos información de la primera iteración
-  file << "Iteración " << iteracion++ << std::endl;
-  InformacionNodosGenerados(generados, file);
-  InformacionNodosInspeccionados(inspeccionados, file);
+  // Mapa para saber si un nodo ya fue visitado
+  std::unordered_map<int, bool> visitado; // Para saber si un nodo ya fue visitado
+
+  // Vectores para mostrar los nodos inspeccionados y generados
+  std::vector<Nodo> inspeccionados;
+  std::vector<Nodo> generados;
+
+  // Inicializamos el nodo inicial
+  Nodo nodo_inicial;
+  nodo_inicial.SetID(id_origen);   // ID del nodo
+  nodo_inicial.SetCoste(0);        // Coste de la arista hacia este nodo
+  nodo_inicial.SetPadre(nullptr);  // El nodo inicial no tiene padre
+  visitado[id_origen] = true;
+
+  // Insertamos el nodo inicial en la pila
+  pila.push(&nodo_inicial);
+  visitado[id_origen] = true;
+  generados.push_back(nodo_inicial);
+
+  // Mostramos la iteración actual
+  int iteracion = 1;
+  archivo_salida << "Iteración " << iteracion++ << std::endl;
+  InformacionNodosGenerados(generados, archivo_salida);
+  InformacionNodosInspeccionados(inspeccionados, archivo_salida);
 
   // Mientras la pila no esté vacía
   while (!pila.empty()) {
-    // Sacamos el nodo de la pila
-    Nodo nodo_actual = pila.top();
+    // Obtenemos el nodo actual
+    Nodo* nodo_actual = pila.top();
     pila.pop();
-      
-    // Si ya lo hemos visitado, lo saltamos
-    if (visitados.find(nodo_actual.GetID()) != visitados.end()) {
-      continue;
-    }
-        
-    // Marcamos como visitado e inspeccionado
-    visitados.insert(nodo_actual.GetID());
-    inspeccionados.push_back(nodo_actual.GetID());
+    inspeccionados.push_back(*nodo_actual);  // Añadimos el nodo a los inspeccionados
 
-    // Si encontramos el nodo destino
-    if (nodo_actual.GetID() == nodo_destino) {
-      // Reconstruimos el camino desde el nodo destino al origen
-      for (int it = nodo_destino; it != nodo_origen; it = camino[it]) {
-        camino_final.push_back(Nodo(it)); // Añadimos el nodo al camino final
-        costo_total += grafo.GetMatrizCoste()[camino[it]][it]; // Sumamos el coste total del camino
+    // Si llegamos al nodo destino, terminamos la búsqueda
+    if (nodo_actual->GetID() == id_destino) {
+      // Creamos un vector para almacenar el camino
+      std::vector<Nodo> camino;
+      Nodo* nodo_camino = nodo_actual;
+
+      // Reconstruimos el camino hacia atrás
+      while (nodo_camino != nullptr) {
+        camino.push_back(*nodo_camino);
+        costo_total += nodo_camino->GetCoste();
+        nodo_camino = nodo_camino->GetPadre();
       }
-      camino_final.push_back(Nodo(nodo_origen)); // Añadimos el nodo origen al camino final
-      // Mostramos información de la iteración
-      file << "Iteración " << iteracion++ << std::endl;
-      InformacionNodosGenerados(generados, file);
-      InformacionNodosInspeccionados(inspeccionados, file);
-      // Invertimos el camino para que vaya desde el origen al destino y lo devolvemos
-      return std::reverse(camino_final.begin(), camino_final.end()), camino_final;
+
+      // Mostramos la iteración actual
+      archivo_salida << "Iteración " << iteracion++ << std::endl;
+      InformacionNodosGenerados(generados, archivo_salida);
+      InformacionNodosInspeccionados(inspeccionados, archivo_salida);
+
+      // Invertimos el camino para que vaya desde el origen hasta el destino
+      std::reverse(camino.begin(), camino.end());
+      return camino;  // Devolvemos el camino encontrado
     }
 
     // En caso contrario, generamos los hijos del nodo actual
-    const std::vector<int>& vecinos = grafo.GetMatrizCoste()[nodo_actual.GetID()];
-    // Recorremos los vecinos del nodo actual
-    for (unsigned i = 0; i < vecinos.size(); ++i) {
+    const std::vector<int>& vecinos = grafo.GetMatrizCoste()[nodo_actual->GetID()];
+
+    // Iteramos sobre los vecinos
+    for (int i = vecinos.size() - 1; i >= 0; --i) {
+      int costo = vecinos[i];  // Costo de la arista hacia el vecino
       // Si hay conexión y no hemos visitado el nodo
-      if (vecinos[i] != -1 && visitados.find(i) == visitados.end()) {
-        Nodo nodo_hijo(i); // Creamos un nuevo nodo hijo
-        Nodo* padre = new Nodo(nodo_actual.GetID()); // Añadimos el nodo actual como padre del nodo hijo
-        nodo_hijo.SetPadre(padre); // Establecemos el padre del nodo hijo
-        nodo_hijo.SetCoste(vecinos[i]); // Establecemos el coste del nodo hijo
-        pila.push(nodo_hijo); // Lo ponemos en la pila para procesarlo después
-        generados.push_back(i); // Añadimos el nodo a los nodos generados
-        camino[i] = nodo_actual.GetID(); // Guardamos el padre del nodo
+      if (costo != -1 && !visitado[i]) {
+        // Creamos un nuevo nodo para el vecino
+        Nodo* nuevo_nodo = new Nodo();
+        nuevo_nodo->SetID(i);
+        nuevo_nodo->SetCoste(costo);
+        nuevo_nodo->SetPadre(nodo_actual);
+
+        // Marcamos como visitado y lo añadimos a la pila
+        visitado[i] = true;
+        pila.push(nuevo_nodo);
+        generados.push_back(*nuevo_nodo);
       }
     }
-
-    // Mostramos la información de la iteración
-    file << "Iteración " << iteracion++ << std::endl;
-    InformacionNodosGenerados(generados, file);
-    InformacionNodosInspeccionados(inspeccionados, file);
+    // Mostramos la iteración actual
+    archivo_salida << "Iteración " << iteracion++ << std::endl;
+    InformacionNodosGenerados(generados, archivo_salida);
+    InformacionNodosInspeccionados(inspeccionados, archivo_salida);
   }
-
-  // Si la pila está vacía y no encontramos el destino, devolvemos un camino vacío
-  return {};
+  return {};  // Si no encontramos un camino, devolvemos un vector vacío
 }

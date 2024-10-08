@@ -152,8 +152,7 @@ int main() {
   std::cout << GREEN << "\nArchivo seleccionado: " << BOLD << archivo_seleccionado << RESET << std::endl << std::endl;
 
   // Inicializamos el grafo con 0 vértices. Posteriormente se carga desde el archivo.
-  Grafo* grafo = new Grafo(0);
-  grafo->CargarDesdeArchivo(archivo_seleccionado);
+  Grafo* grafo = new Grafo(archivo_seleccionado);
 
   // DEBUGGING:
   // Mostramos la matriz de adyacencia cargada desde el archivo.
@@ -164,8 +163,18 @@ int main() {
   int origen, destino;
   MostrarConEfecto("Ingrese el vértice de origen: ");
   std::cin >> origen;
+  if (origen < 0) {
+    std::cerr << RED << "Vértice de origen inválido (negativo)." << RESET << std::endl;
+    delete grafo;
+    return 1;
+  }
   MostrarConEfecto("Ingrese el vértice de destino: ");
   std::cin >> destino;
+  if (destino < 0) {
+    std::cerr << RED << "Vértice de destino inválido (negativo)." << RESET << std::endl;
+    delete grafo;
+    return 1;
+  }
   std::cout << std::endl;
 
   // Abrimos el archivo para la salida de las iteraciones.
