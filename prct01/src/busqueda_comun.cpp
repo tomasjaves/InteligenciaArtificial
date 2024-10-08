@@ -23,26 +23,19 @@ void InsertarMenorAMayor(std::vector<int>& nodos_generados, int nodo) {
   nodos_generados.push_back(nodo);
 }
 
-/**
- * @brief Función para mostrar información de la iteración actual.
- * 
- * @param iteracion 
- * @param nodos_generados 
- * @param nodos_inspeccionados 
- * @param archivo_salida 
- */
-void InformacionIteracion(int& iteracion, const std::vector<int>& nodos_generados,
-                          const std::vector<int>& nodos_inspeccionados, std::ofstream& archivo_salida) {
-  ++iteracion;
-  archivo_salida << "Iteración " << iteracion << std::endl;
+void InformacionNodosGenerados(const std::vector<int>& nodos_generados, std::ofstream& archivo_salida) {
   archivo_salida << "Nodos Generados: ";
-  for (int nodo : nodos_generados) {
-    archivo_salida << nodo + 1;  // Mostrar nodos indexados a partir de 1.
-    if (nodo != nodos_generados.back()) {
+  for (size_t i = 0; i < nodos_generados.size(); ++i) {
+    archivo_salida << nodos_generados[i] + 1;  // Mostrar nodos indexados a partir de 1.
+    if (i != nodos_generados.size() - 1) {  // Compara el índice, no el valor del nodo.
       archivo_salida << ", ";
     }
   }
-  archivo_salida << "\nNodos Inspeccionados: ";
+  archivo_salida << std::endl;
+}
+
+void InformacionNodosInspeccionados(const std::vector<int>& nodos_inspeccionados, std::ofstream& archivo_salida) {
+  archivo_salida << "Nodos Inspeccionados: ";
   if (nodos_inspeccionados.size() >= 1) {
     for (unsigned i = 0; i < nodos_inspeccionados.size(); ++i) {
       archivo_salida << nodos_inspeccionados[i] + 1;  // Mostrar nodos indexados a partir de 1.

@@ -186,13 +186,12 @@ int main() {
 
   // Realizamos la búsqueda según la opción seleccionada.
   if (opcion == 1) { // Búsqueda en amplitud.
-    camino = BusquedaEnAmplitud(*grafo, origen-1, destino-1, costo_total, archivo_salida);
+    BusquedaEnAmplitud(*grafo, origen-1, destino-1, costo_total, archivo_salida);
   } else if (opcion == 2) { // Búsqueda en profundidad.
     camino = BusquedaEnProfundidad(*grafo, origen-1, destino-1, costo_total, archivo_salida);
+    // Mostramos el camino y el costo total.
+    MostrarCamino(camino, costo_total, origen, destino, archivo_salida);
   }
-
-  // Mostramos el camino y el costo total.
-  MostrarCamino(camino, costo_total, origen, destino, archivo_salida);
 
   std::cout << GREEN << "Resultado depositado en archivo " << BOLD << "'output/resultados.txt'." << RESET << std::endl;
   

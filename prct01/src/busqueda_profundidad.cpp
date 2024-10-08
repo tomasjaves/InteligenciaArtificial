@@ -28,7 +28,9 @@ bool DFSRecursivo(const Grafo& grafo, const int& nodo_actual, const int& destino
   camino.push_back(nodo_actual);
 
   // Mostramos información de la iteración en el archivo de salida.
-  InformacionIteracion(iteracion, nodos_generados, nodos_inspeccionados, archivo_salida);
+  archivo_salida << "Iteración " << iteracion++ << std::endl;
+  InformacionNodosGenerados(nodos_generados, archivo_salida);
+  InformacionNodosInspeccionados(nodos_inspeccionados, archivo_salida);
 
   // Añadimos el nodo actual a los nodos inspeccionados.
   nodos_inspeccionados.push_back(nodo_actual);
@@ -40,7 +42,7 @@ bool DFSRecursivo(const Grafo& grafo, const int& nodo_actual, const int& destino
   }
 
   // Obtenemos los vecinos del nodo actual.
-  const std::vector<int>& vecinos = grafo.ObtenerMatrizCoste()[nodo_actual];
+  const std::vector<int>& vecinos = grafo.GetMatrizCoste()[nodo_actual];
   // Iteramos sobre los vecinos.
   for (unsigned i = 0; i < vecinos.size(); ++i) {
     // Obtenemos el costo de ir al vecino.

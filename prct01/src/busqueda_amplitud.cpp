@@ -1,100 +1,127 @@
 #include "../include/busqueda_amplitud.h"
 
-/**
- * @brief Función que implementa la búsqueda en amplitud (BFS) con salida a archivo.
- * 
- * @param grafo 
- * @param origen 
- * @param destino 
- * @param costo_total 
- * @param archivo_salida 
- * @return std::vector<int> 
- */
-std::vector<int> BusquedaEnAmplitud(const Grafo& grafo, const int& origen, const int& destino, int& costo_total, std::ofstream& archivo_salida) {
-  // Creamos un vector para almacenar el camino.
-  std::vector<int> camino;
+// Función auxiliar que verifica si un nodo ya está en la rama de inspección
+bool NodoEnLaRama(const std::vector<Nodo>& recorrido, int id, int pos_actual) {
+	while (pos_actual != -1) {
+	  if (recorrido[pos_actual].GetID() == id) {
+	    return true;
+	  }
+	  pos_actual = recorrido[pos_actual].GetPosPadre();
+	}
+	return false;
+}
 
-  // Si el origen y el destino son iguales, devolvemos el origen.
-  if (origen == destino) {
-    camino.push_back(origen);
-    costo_total = 0;
-    return camino;
-  }
+// Función para mostrar el recorrido en amplitud entre dos nodos
+void BusquedaEnAmplitud(const Grafo& grafo, const int& id_inicial, const int& id_final, int& costo_total, std::ofstream& fichero_salida) {
+    Nodo nodo_inicial;
+    nodo_inicial.SetID(id_inicial);
+    nodo_inicial.SetPosPadre(-1);  // No tiene padre al ser el nodo inicial.
+    nodo_inicial.SetCoste(0);      // El coste para llegar hasta él mismo es 0.
+    nodo_inicial.SetPadre(nullptr);  // No tiene padre, es la raíz.
 
-  // Estructuras para manejar la búsqueda.
-  std::queue<int> cola;  // Cola para manejar BFS.
-  std::unordered_map<int, bool> visitado;  // Para saber si un nodo ya fue visitado. Clave: nodo, Valor: visitado.
-  std::unordered_map<int, int> distancia;  // Para mantener la distancia mínima. Clave: nodo, Valor: distancia.
-  std::unordered_map<int, int> padre;  // Para rastrear el camino. Clave: nodo, Valor: padre.
+    std::vector<Nodo> recorrido;
+    std::vector<int> inspeccionados;  // Nodos inspeccionados
+    std::vector<int> generados;       // Nodos generados
 
-  // Inicializamos las estructuras.
-  cola.push(origen);
-  visitado[origen] = true;
-  distancia[origen] = 0;
-  padre[origen] = -1;  // El nodo inicial no tiene padre.
+    recorrido.push_back(nodo_inicial);
+    generados.push_back(nodo_inicial.GetID());
 
-  // Estructuras para almacenar nodos generados e inspeccionados en cada iteración.
-  std::vector<int> nodos_generados;  // Nodos generados.
-  std::vector<int> nodos_inspeccionados;  // Nodos inspeccionados.
-  int iteracion = 0;  // Contador de iteraciones.
+    bool final{false};
+    unsigned ultimo_anadido{0};
+    unsigned pos_id_final{0};
+    unsigned aux{ultimo_anadido};
+    bool hijo_anadido{false};
+    int iteracion = 1;  // Contador de iteraciones
 
-  // El nodo origen es generado al principio.
-  nodos_generados.push_back(origen);
+    fichero_salida << "Iteración " << iteracion++ << std::endl;
+		InformacionNodosGenerados(generados, fichero_salida);
+		InformacionNodosInspeccionados(inspeccionados, fichero_salida);
 
-  // Realizamos la búsqueda en amplitud.
-  while (!cola.empty()) {
-    int nodo_actual = cola.front();
-    cola.pop();
+    while (recorrido.size() != static_cast<long unsigned int>(grafo.GetNumeroVertices()) && !final) {
+        hijo_anadido = false;
+        aux = ultimo_anadido;
+        long unsigned int kTamanyo{recorrido.size()};
 
-    // Mostrar información de la iteración.
-    InformacionIteracion(iteracion, nodos_generados, nodos_inspeccionados, archivo_salida);
+        // Añadimos los hijos del último nivel inspeccionado
+        for (unsigned i{aux}; i < kTamanyo; ++i) {
+            // Mostramos la iteración
+            fichero_salida << "Iteración " << iteracion << std::endl;
 
-    // Agregamos el nodo actual a los nodos inspeccionados.
-    nodos_inspeccionados.push_back(nodo_actual);
+            // Si el nodo actual no es el final, generamos los hijos. En caso de que sea el nodo final, terminamos
+            if (recorrido[i].GetID() == id_final) {
+                final = true;
+                pos_id_final = i;
 
-    // Obtenemos los vecinos del nodo actual.
-    const std::vector<int>& vecinos = grafo.ObtenerMatrizCoste()[nodo_actual];
-    
-    // Iteramos sobre los vecinos.
-    for (unsigned i = 0; i < vecinos.size(); ++i) {
-      int costo = vecinos[i];  // Almacenamos el costo de ir del nodo actual al vecino i.
+                // Imprimir nodos generados
+                InformacionNodosGenerados(generados, fichero_salida);
 
-      // Si hay conexión y no ha sido visitado.
-      if (costo != -1 && !visitado[i]) {
-        // Agregamos el vecino a la cola y actualizamos las estructuras.
-        cola.push(i);
-        visitado[i] = true;
-        padre[i] = nodo_actual;
-        distancia[i] = distancia[nodo_actual] + costo;
+                inspeccionados.push_back(recorrido[i].GetID());
 
-        // Agregamos el vecino a los nodos generados.
-        InsertarMenorAMayor(nodos_generados, i);
+                // Imprimir nodos inspeccionados
+                InformacionNodosInspeccionados(inspeccionados, fichero_salida);
 
-        // Si hemos encontrado el destino.
-        if (i == unsigned(destino)) {
-          // Mostramos información adicional antes de terminar.
-          InformacionIteracion(iteracion, nodos_generados, nodos_inspeccionados, archivo_salida);
+                break;
+            }
 
-          // El costo total es la distancia acumulada al nodo destino.
-          costo_total = distancia[i];
+            // Si no era el nodo final, generamos los hijos que no estén en la rama.
+            const std::vector<int>& vecinos = grafo.GetMatrizCoste()[recorrido[i].GetID()];
+            for (unsigned j{0}; j < vecinos.size(); ++j) {
+                if (vecinos[j] != -1) {  // Hay conexión
+                    Nodo nuevo_nodo;
+                    nuevo_nodo.SetID(j);  // ID del nodo hijo
 
-          // Reconstruimos el camino desde el destino al origen.
-          int nodo = destino;
-          // Mientras no lleguemos al origen (nodo raíz)
-          while (nodo != -1) {
-            // Agregamos el nodo al camino y actualizamos el nodo actual al padre y repetimos.
-            camino.push_back(nodo);
-            nodo = padre[nodo];
-          }
-          // Invertimos el camino para que vaya desde el origen al destino.
-          std::reverse(camino.begin(), camino.end());
-          return camino;
+                    if (!NodoEnLaRama(recorrido, nuevo_nodo.GetID(), i)) {
+                        nuevo_nodo.SetPosPadre(i);  // Almacenamos en qué posición está el padre.
+                        nuevo_nodo.SetCoste(vecinos[j]);  // Coste de la conexión
+                        nuevo_nodo.SetPadre(&recorrido[i]);  // El padre es el nodo actual
+                        nuevo_nodo.SetProfundidad(recorrido[i].GetProfundidad() + 1);
+
+                        recorrido.push_back(nuevo_nodo);
+                        generados.push_back(nuevo_nodo.GetID());  // Añadimos el nodo generado
+                        hijo_anadido = true;
+                    }
+                }
+            }
+
+            // Imprimir nodos generados
+            InformacionNodosGenerados(generados, fichero_salida);
+
+            if (final) {
+                break;
+            }
+
+            inspeccionados.push_back(recorrido[i].GetID());  // Añadimos el nodo inspeccionado
+            ++ultimo_anadido;
+
+            // Imprimir nodos inspeccionados
+            InformacionNodosInspeccionados(inspeccionados, fichero_salida);
+            ++iteracion;  // Incrementamos el contador de iteraciones
         }
-      }
-    }
-  }
 
-  // Si no encontramos un camino, devolvemos un vector vacío y un costo de infinito.
-  costo_total = std::numeric_limits<int>::infinity();
-  return {};
+        if (final) {
+            break;
+        }
+        if (!hijo_anadido) {
+            break;  // No hay solución, no existe camino
+        }
+    }
+
+    if (final) {
+        fichero_salida << "Camino: ";
+        int pos_actual = pos_id_final;
+        std::vector<int> camino;
+        while (pos_actual != -1) {
+            camino.push_back(recorrido[pos_actual].GetID());
+						costo_total += recorrido[pos_actual].GetCoste();
+            pos_actual = recorrido[pos_actual].GetPosPadre();
+        }
+
+        for (int i = camino.size() - 1; i >= 0; --i) {
+            fichero_salida << camino[i] + 1 << " - ";
+        }
+        fichero_salida << std::endl;
+				fichero_salida << "Costo: " << costo_total << std::endl;
+    } else {
+        fichero_salida << "No se ha encontrado un camino" << std::endl;
+    }
 }

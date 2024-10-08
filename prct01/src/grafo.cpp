@@ -86,7 +86,7 @@ void Grafo::AgregarArista(int origen, int destino, double costo) {
  * 
  * @return int 
  */
-int Grafo::ObtenerNumeroAristas() const {
+int Grafo::GetNumeroAristas() const {
   return num_aristas_;
 }
 
@@ -95,7 +95,7 @@ int Grafo::ObtenerNumeroAristas() const {
  * 
  * @return int 
  */
-int Grafo::ObtenerNumeroVertices() const {
+int Grafo::GetNumeroVertices() const {
   return num_vertices_;
 }
 
@@ -104,7 +104,7 @@ int Grafo::ObtenerNumeroVertices() const {
  * 
  * @return const std::vector<std::vector<double>>& 
  */
-const std::vector<std::vector<int>>& Grafo::ObtenerMatrizCoste() const {
+const std::vector<std::vector<int>>& Grafo::GetMatrizCoste() const {
   return matriz_adyacencia_;
 }
 

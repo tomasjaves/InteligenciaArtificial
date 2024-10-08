@@ -1,5 +1,6 @@
 #pragma once
 
+#include "nodo.h"
 #include <string>
 #include <vector>
 #include <iostream>
@@ -17,9 +18,9 @@ class Grafo {
 
   void AgregarArista(int, int, double);
 
-  int ObtenerNumeroAristas() const;
-  int ObtenerNumeroVertices() const;
-  const std::vector<std::vector<int>>& ObtenerMatrizCoste() const;
+  int GetNumeroAristas() const;
+  int GetNumeroVertices() const;
+  const std::vector<std::vector<int>>& GetMatrizCoste() const;
 
   void MostrarGrafo() const;
   void MostrarInformacion(const int&, const int&, std::ofstream&) const;
