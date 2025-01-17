@@ -20,7 +20,6 @@ Grafo::Grafo(int num_vertices) : num_vertices_(num_vertices) {
  * @param nombre_archivo 
  */
 Grafo::Grafo(const std::string& nombre_archivo) {
-  *this = Grafo(0);  // Inicializamos el grafo con 0 vértices.
   std::string ruta = "input/" + nombre_archivo;
   // Abrimos el archivo.
   std::ifstream archivo(ruta);
@@ -127,6 +126,9 @@ void Grafo::MostrarGrafo() const {
 /**
  * @brief Método para mostrar información del grafo.
  * 
+ * @param origen
+ * @param destino
+ * @param archivo_salida archivo de salida para escribir la información.
  */
 void Grafo::MostrarInformacion(const int& origen, const int& destino, std::ofstream& archivo_salida) const {
   archivo_salida << "──────────────────────────────────────────────────" << std::endl;
@@ -135,4 +137,54 @@ void Grafo::MostrarInformacion(const int& origen, const int& destino, std::ofstr
   archivo_salida << "Vértice origen: " << origen << std::endl;
   archivo_salida << "Vértice destino: " << destino << std::endl;
   archivo_salida << "──────────────────────────────────────────────────" << std::endl;
+}
+
+/**
+ * @brief Método para mostrar las conexiones de cada vértice en el grafo.
+ * 
+ * @param fichero_salida fichero de salida para escribir la información.
+ */
+void Grafo::InformacionConexiones(std::ofstream& fichero_salida) const {
+  // 1) Imprimimos el número de vértices y aristas
+  fichero_salida << "Número de nodos: " << num_vertices_ << "\n";
+  fichero_salida << "Número de aristas: " << num_aristas_ << "\n\n";
+
+  // 2) Listamos todas las aristas con su coste
+  int contador_aristas = 1;
+  for (int i = 0; i < num_vertices_; ++i) {
+    for (int j = i + 1; j < num_vertices_; ++j) {
+      // Si hay conexión y el coste no es -1
+      if (matriz_adyacencia_[i][j] != -1) {
+        fichero_salida << contador_aristas << ".- Conexión ("
+                       << i + 1 << ", " << j + 1 << ") = "
+                       << matriz_adyacencia_[i][j] << "\n";
+        contador_aristas++;
+      }
+    }
+  }
+  fichero_salida << "\n";
+
+  // 3) Para cada nodo, mostrar sus hijos (o vecinos)
+  for (int i = 0; i < num_vertices_; ++i) {
+    // Recogemos los vecinos, excluyendo al propio nodo (i == j)
+    std::vector<int> hijos;
+    for (int j = 0; j < num_vertices_; ++j) {
+      // Verificamos que exista conexión y que j != i
+      if (j != i && matriz_adyacencia_[i][j] != -1) {
+        hijos.push_back(j + 1);  // +1 para imprimir con base 1
+      }
+    }
+
+    // Imprimimos la información: "Nodo X tiene Y hijos: ..."
+    fichero_salida << "Nodo " << i + 1 << " tiene " << hijos.size() << " hijos: ";
+    if (!hijos.empty()) {
+      for (size_t k = 0; k < hijos.size(); ++k) {
+        fichero_salida << hijos[k];
+        if (k < hijos.size() - 1) {
+          fichero_salida << ", ";
+        }
+      }
+    }
+    fichero_salida << "\n";
+  }
 }

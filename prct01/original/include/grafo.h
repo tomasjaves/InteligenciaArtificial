@@ -29,6 +29,7 @@ class Grafo {
   // Métodos para mostrar información del grafo.
   void MostrarGrafo() const;
   void MostrarInformacion(const int&, const int&, std::ofstream&) const;
+  void InformacionConexiones(std::ofstream&) const;
 
  private:
   int num_vertices_;  // Número de vértices en el grafo.

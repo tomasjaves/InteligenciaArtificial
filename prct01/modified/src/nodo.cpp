@@ -20,7 +20,6 @@ Nodo::Nodo(const int& id) : id_(id), pos_padre_(-1), coste_(0), padre_(nullptr) 
  * @param pos_padre Posición del padre en la estructura de nodos.
  * @param coste Coste de la arista hacia este nodo.
  * @param padre ID del nodo padre.
- * @param profundidad Profundidad del nodo en el árbol.
  */
 Nodo::Nodo(const int& id, const int& pos_padre, const int& coste, Nodo* padre) 
   : id_(id), pos_padre_(pos_padre), coste_(coste), padre_(padre) {}

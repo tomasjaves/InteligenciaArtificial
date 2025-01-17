@@ -23,16 +23,23 @@ define compile
 	@$(CXX) $(CXXFLAGS) -c -o $(2) $(1)
 endef
 
-all: $(EXEC)
+# Regla principal
+all: build $(EXEC)
 	@echo "$(PURPLE)$(BOLD)Compilación completada$(RESET)"
 
+# Crear el ejecutable
 $(EXEC): $(OBJ)
 	$(CXX) -o $@ $(OBJ) $(LBLIBS)
 
-build/%.o: src/%.cpp
+# Compilar archivos fuente a objetos en el directorio build
+build/%.o: src/%.cpp | build
 	$(call compile,$<,$@)
 
+# Crear el directorio build si no existe
+build:
+	@mkdir -p build
+
+# Limpiar archivos generados
 clean:
 	@echo "${RED}$(BOLD)Limpieza en progreso: eliminando archivos de compilación y ejecutables...$(RESET)${GRAY}"
-	rm -rf $(OBJ) $(EXEC)
-	> output/resultados.txt
+	rm -rf build $(EXEC) output

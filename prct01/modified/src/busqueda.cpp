@@ -78,7 +78,7 @@ std::vector<Nodo> Busqueda::BusquedaEnAmplitud(const Grafo& grafo, const int& id
 
 	std::vector<Nodo> recorrido;
 	std::vector<Nodo> inspeccionados; // Nodos inspeccionados
-	std::vector<Nodo> generados;			 // Nodos generados
+	std::vector<Nodo> generados;			// Nodos generados
 	std::vector<Nodo> camino;         // El camino que se devolverá
 
 	recorrido.push_back(nodo_inicial);
@@ -191,89 +191,117 @@ std::vector<Nodo> Busqueda::BusquedaEnAmplitud(const Grafo& grafo, const int& id
  * @param file 
  * @return std::vector<Nodo> 
  */
-std::vector<Nodo> Busqueda::BusquedaEnProfundidad(const Grafo& grafo, const int& id_origen, const int& id_destino, int& costo_total, std::ofstream& archivo_salida) {
-  // Creamos una pila para gestionar la búsqueda
-  std::stack<Nodo*> pila;
+std::vector<Nodo> Busqueda::BusquedaEnProfundidad(const Grafo& grafo, const int& id_inicial, const int& id_final, int& costo_total, std::ofstream& archivo_salida) {
+  // Estructura para saber si un nodo ha sido visitado
+  std::unordered_map<int, bool> visitado;
 
-  // Mapa para saber si un nodo ya fue visitado
-  std::unordered_map<int, bool> visitado; // Para saber si un nodo ya fue visitado
-
-  // Vectores para mostrar los nodos inspeccionados y generados
-  std::vector<Nodo> inspeccionados;
+  // Vectores para “traza” (similar a tu versión iterativa)
   std::vector<Nodo> generados;
+  std::vector<Nodo> inspeccionados;
 
-  // Inicializamos el nodo inicial
+  // Vector para guardar el camino actual en la recursión
+  // (lo iremos construyendo a medida que descendemos)
+  std::vector<Nodo> camino_actual;
+
+  // Creamos el nodo inicial (similar a tu versión iterativa)
   Nodo nodo_inicial;
-  nodo_inicial.SetID(id_origen);   // ID del nodo
-  nodo_inicial.SetCoste(0);        // Coste de la arista hacia este nodo
-  nodo_inicial.SetPadre(nullptr);  // El nodo inicial no tiene padre
-  visitado[id_origen] = true;
+  nodo_inicial.SetID(id_inicial);
+  nodo_inicial.SetCoste(0);
+  nodo_inicial.SetPadre(nullptr);
 
-  // Insertamos el nodo inicial en la pila
-  pila.push(&nodo_inicial);
-  visitado[id_origen] = true;
+  // Marcamos como visitado
+  visitado[id_inicial] = true;
   generados.push_back(nodo_inicial);
 
-  // Mostramos la iteración actual
+  // Iteración para la traza
   int iteracion = 1;
+
+  // Escribimos la primera traza (antes de entrar en DFSRecursivo)
   archivo_salida << "Iteración " << iteracion++ << std::endl;
   InformacionNodosGenerados(generados, archivo_salida);
   InformacionNodosInspeccionados(inspeccionados, archivo_salida);
 
-  // Mientras la pila no esté vacía
-  while (!pila.empty()) {
-    // Obtenemos el nodo actual
-    Nodo* nodo_actual = pila.top();
-    pila.pop();
-    inspeccionados.push_back(*nodo_actual);  // Añadimos el nodo a los inspeccionados
+  // Variable booleana para indicar si se ha encontrado el destino
+  bool encontrado = false;
 
-    // Si llegamos al nodo destino, terminamos la búsqueda
-    if (nodo_actual->GetID() == id_destino) {
-      // Creamos un vector para almacenar el camino
-      std::vector<Nodo> camino;
-      Nodo* nodo_camino = nodo_actual;
+  // Iniciamos la búsqueda recursiva
+  DFSRecursivo(grafo, &nodo_inicial, id_final,
+               visitado, generados, inspeccionados, camino_actual,
+               costo_total, archivo_salida, iteracion, encontrado);
 
-      // Reconstruimos el camino hacia atrás
-      while (nodo_camino != nullptr) {
-        camino.push_back(*nodo_camino);
-        costo_total += nodo_camino->GetCoste();
-        nodo_camino = nodo_camino->GetPadre();
-      }
+  // Si al terminar la recursión no se encontró, camino_actual estará vacío
+  return camino_actual;  
+}
 
-      // Mostramos la iteración actual
+void Busqueda::DFSRecursivo(const Grafo& grafo,
+                            Nodo* nodo_actual,
+                            int id_destino,
+                            std::unordered_map<int, bool>& visitado,
+                            std::vector<Nodo>& generados,
+                            std::vector<Nodo>& inspeccionados,
+                            std::vector<Nodo>& camino_actual,
+                            int& costo_total,
+                            std::ofstream& archivo_salida,
+                            int& iteracion,
+                            bool& encontrado) {
+  // Marcamos el nodo actual como visitado
+  visitado[nodo_actual->GetID()] = true;
+  // Añadimos el nodo actual a “inspeccionados”
+  inspeccionados.push_back(*nodo_actual);
+
+  // Añadimos también el nodo al “camino actual”
+  camino_actual.push_back(*nodo_actual);
+
+  // Comprobamos si es el destino
+  if (nodo_actual->GetID() == id_destino) {
+    // Mostramos la traza final
+    archivo_salida << "Iteración " << iteracion++ << std::endl;
+    InformacionNodosGenerados(generados, archivo_salida);
+    InformacionNodosInspeccionados(inspeccionados, archivo_salida);
+
+    // Reconstruimos el coste total (sumando coste de cada nodo en el camino)
+    costo_total = 0;
+    for (auto& nd : camino_actual) {
+      costo_total += nd.GetCoste();
+    }
+
+    // Marcamos que el destino fue encontrado
+    encontrado = true;
+    return;
+  }
+
+  // Exploramos sus vecinos
+  const std::vector<int>& fila = grafo.GetMatrizCoste()[nodo_actual->GetID()];
+
+  // Recorremos los vecinos
+  for (int i = 0; i < static_cast<int>(fila.size()); ++i) {
+    int costo = fila[i];
+    // Si hay conexión y no está visitado
+    if (costo != -1 && !visitado[i]) {
+      // Creamos un nuevo nodo
+      Nodo* nuevo_hijo = new Nodo();
+      nuevo_hijo->SetID(i);
+      nuevo_hijo->SetCoste(costo);
+      nuevo_hijo->SetPadre(nodo_actual);
+
+      generados.push_back(*nuevo_hijo);
       archivo_salida << "Iteración " << iteracion++ << std::endl;
       InformacionNodosGenerados(generados, archivo_salida);
       InformacionNodosInspeccionados(inspeccionados, archivo_salida);
 
-      // Invertimos el camino para que vaya desde el origen hasta el destino
-      std::reverse(camino.begin(), camino.end());
-      return camino;  // Devolvemos el camino encontrado
-    }
+      // Llamada recursiva
+      DFSRecursivo(grafo, nuevo_hijo, id_destino,
+                   visitado, generados, inspeccionados, camino_actual,
+                   costo_total, archivo_salida, iteracion, encontrado);
 
-    // En caso contrario, generamos los hijos del nodo actual
-    const std::vector<int>& vecinos = grafo.GetMatrizCoste()[nodo_actual->GetID()];
-
-    // Iteramos sobre los vecinos
-    for (int i = vecinos.size() - 1; i >= 0; --i) {
-      int costo = vecinos[i];  // Costo de la arista hacia el vecino
-      // Si hay conexión y no hemos visitado el nodo
-      if (costo != -1 && !visitado[i]) {
-        // Creamos un nuevo nodo para el vecino
-        Nodo* nuevo_nodo = new Nodo();
-        nuevo_nodo->SetID(i);
-        nuevo_nodo->SetCoste(costo);
-        nuevo_nodo->SetPadre(nodo_actual);
-
-        // Marcamos como visitado y lo añadimos a la pila
-        visitado[i] = true;
-        pila.push(nuevo_nodo);
-        generados.push_back(*nuevo_nodo);
+      // Si el destino se encontró en la rama recursiva, no seguimos
+      if (encontrado) {
+        return;
       }
     }
-    // Mostramos la iteración actual
-    archivo_salida << "Iteración " << iteracion++ << std::endl;
-    InformacionNodosGenerados(generados, archivo_salida);
-    InformacionNodosInspeccionados(inspeccionados, archivo_salida);
   }
-  return {};  // Si no encontramos un camino, devolvemos un vector vacío
+
+  // 5) Si llegamos aquí, significa que este nodo no ha llevado al destino:
+  //    lo quitamos del “camino actual” (backtracking)
+  camino_actual.pop_back();
 }

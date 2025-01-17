@@ -101,7 +101,6 @@ std::vector<std::string> ListarArchivos(const std::string& path) {
   return archivos;
 }
 
-
 /**
  * @brief Función principal para la ejecución del programa.
  * 
@@ -138,6 +137,7 @@ int main() {
   for (size_t i = 0; i < archivos.size(); ++i) {
     std::cout << PINK << BOLD << i + 1 << ". " << RESET << archivos[i] << std::endl;  // Mostrar archivos con número
   }
+
   // Solicitamos al usuario que ingrese el número del archivo
   int seleccion;
   std::cout << UNDERLINE << "Ingrese el número del archivo a seleccionar:" << RESET << " ";
@@ -147,6 +147,7 @@ int main() {
     std::cerr << RED << "\nSelección inválida." << RESET << std::endl;
     return 1;
   }
+  
   // Obtenemos el nombre del archivo seleccionado
   std::string archivo_seleccionado = archivos[seleccion - 1];
   std::cout << GREEN << "\nArchivo seleccionado: " << BOLD << archivo_seleccionado << RESET << std::endl << std::endl;
@@ -177,21 +178,41 @@ int main() {
   }
   std::cout << std::endl;
 
-  // Abrimos el archivo para la salida de las iteraciones.
-  std::ofstream archivo_salida("output/resultados.txt");
-  if (!archivo_salida) {
-    std::cerr << "Error al abrir el archivo de salida." << std::endl;
+  // Obtenemos el nombre del archivo de salida según la opción seleccionada.
+  // Para ello, si no hay un directorio 'output', lo creamos.
+  if (!std::filesystem::exists("output")) {
+    std::filesystem::create_directory("output");
+  }
+  // Definimos el nombre del archivo de salida según la opción seleccionada.
+  std::string nombre_archivo;
+  if (opcion == 1) {
+    nombre_archivo = "output/SalidaAmplitud.txt";
+  } else if (opcion == 2) {
+    nombre_archivo = "output/SalidaProfundidad.txt";
+  } else {
+    // Si no hay ninguna opción válida, manejamos el error
+    std::cerr << "Opción no válida.\n";
     delete grafo;
     return 1;
   }
 
-  std::vector<Nodo> camino;
+  // Abrimos el archivo de salida y el archivo de información del grafo.
+  std::ofstream archivo_salida(nombre_archivo);
+  std::ofstream archivo_salida_informacion("output/InformacionGrafo.txt");
+
+  // Comprobamos si se pudieron abrir los archivos de salida.
+  if (!archivo_salida || !archivo_salida_informacion) {
+    std::cerr << "Error al abrir uno de los archivos de salida." << std::endl;
+    delete grafo;
+    return 1;
+  }
+
   // Mostramos datos del grafo.
   grafo->MostrarInformacion(origen, destino, archivo_salida);
+  grafo->InformacionConexiones(archivo_salida_informacion);
 
-  // Inicializamos el coste total del camino.
+  std::vector<Nodo> camino;
   int costo_total = 0;
-
   // Realizamos la búsqueda según la opción seleccionada.
   if (opcion == 1) { // Búsqueda en amplitud.
     camino = Busqueda::BusquedaEnAmplitud(*grafo, origen-1, destino-1, costo_total, archivo_salida);
@@ -201,10 +222,17 @@ int main() {
 
   // Mostramos el camino y el costo total.
   MostrarCamino(camino, costo_total, origen, destino, archivo_salida);
-  std::cout << GREEN << "Resultado depositado en archivo " << BOLD << "'output/resultados.txt'." << RESET << std::endl;
-  
+  std::cout << ITALIC << GREEN << "Resultado depositado en archivo " << RESET;
+  if (opcion == 1) {
+    std::cout << GREEN << BOLD << "'output/SalidaAmplitud.txt'." << RESET << std::endl;
+  } else if (opcion == 2) {
+    std::cout << GREEN << BOLD << "'output/SalidaProfundidad.txt'." << RESET << std::endl;
+  }
+  std::cout << TURQUOISE << ITALIC "Archivo de información del grafo " << RESET << TURQUOISE << BOLD << "'output/InformacionGrafo.txt'." << RESET << std::endl << std::endl;
+
   // Cerrar el archivo de salida.
   archivo_salida.close();
+  archivo_salida_informacion.close();
   // Liberamos la memoria.
   delete grafo;
   return 0;
