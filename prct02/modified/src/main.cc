@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
     std::cin >> opcion;
     switch (opcion) {
       case '1': // Realizar búsqueda A*
-        StoreSearch(labyrinth, nombre_fichero);
+        StoreSearchModified(labyrinth, nombre_fichero);
         break;
       case '2': // Cambiar nodo inicial
         std::cout << GREEN << BOLD << "\nCambiar nodo inicial\n\n" << RESET;

@@ -77,7 +77,7 @@ std::ofstream StoreSearch(Labyrinth& labyrinth, std::string& instance_name) {
   std::string id = instance_name.substr(7, 2);  // Obtiene el identificador de la instancia
 
   // Realizamos la búsqueda
-  Instance table = labyrinth.AStarSearch();
+  Instance table = labyrinth.AStarSearchModified();
 
   // Extraemos la información
   std::string path = VectorToString(table.path);  // Convierte el camino a string
@@ -217,4 +217,91 @@ bool InvalidNeighbor(Cell& neighbor, Cell& current_node,
                      CellVector& closed_nodes) {
   return neighbor.GetPos() == std::make_pair(-1, -1) ||  // Si el nodo no existe en el laberinto
   IsClosedNode(neighbor, closed_nodes);                  // Si el nodo ya está cerrado
+}
+
+// MODIFICACION
+
+std::ofstream StoreSearchModified(Labyrinth& labyrinth, std::string& instance_name) {
+  std::ofstream output_file;
+
+  // Crear el directorio "output" si no existe
+  if (!std::filesystem::exists("output")) {
+    std::filesystem::create_directory("output");
+  }
+  output_file.open("output/instancias.md", std::ios_base::app);  // Abre el fichero en modo append
+
+  std::string id = instance_name.substr(7, 2);  // Obtiene el identificador de la instancia
+
+  // Cabecera inicial
+  output_file << "Resultados para la instancia " << id << ":\n";
+  output_file << std::string(50, '-') << "\n\n";
+
+  // Ejecutar el algoritmo modificado 10 veces
+  for (int iteracion_global = 1; iteracion_global <= 10; ++iteracion_global) {
+    // Realizar la búsqueda usando el algoritmo A* modificado
+    Instance table = labyrinth.AStarSearchModified();
+
+    // Extraer información de la instancia
+    std::string path = VectorToString(table.path);  // Convierte el camino a string
+    int generados = table.generated.size();
+    int visitados = table.visited.size();
+    int cost = 0;
+    std::string dibujo = table.dibujo;
+
+    // Si hay camino, obtenemos el coste
+    if (path != "No path") cost = table.path.back().GetGValue();
+
+    // Ancho fijo para cada columna
+    const int col_widths[] = {10, 5, 5, 7, 20, 22};
+
+    // Cabecera de la tabla
+    if (iteracion_global == 1) {
+      output_file << "| " << CenterText("Iteración", col_widths[0])
+                  << " | " << CenterText("n", col_widths[1])
+                  << " | " << CenterText("m", col_widths[2])
+                  << " | " << CenterText("Coste", col_widths[3])
+                  << " | " << CenterText("Nodos Generados", col_widths[4])
+                  << " | " << CenterText("Nodos inspeccionados", col_widths[5]) << " |\n";
+
+      output_file << "|-" << std::string(col_widths[0], '-') << "-|-" 
+                  << std::string(col_widths[1], '-') << "-|-" 
+                  << std::string(col_widths[2], '-') << "-|-" 
+                  << std::string(col_widths[3], '-') << "-|-" 
+                  << std::string(col_widths[4], '-') << "-|-" 
+                  << std::string(col_widths[5], '-') << "-|\n";
+    }
+
+    // Contenido de la tabla por iteración
+    output_file << "| " << CenterText(std::to_string(iteracion_global), col_widths[0])
+                << " | " << CenterText(std::to_string(labyrinth.GetRows()), col_widths[1])
+                << " | " << CenterText(std::to_string(labyrinth.GetColumns()), col_widths[2])
+                << " | " << CenterText(std::to_string(cost), col_widths[3])
+                << " | " << CenterText(std::to_string(generados), col_widths[4])
+                << " | " << CenterText(std::to_string(visitados), col_widths[5]) << " |\n";
+
+    // Detalles adicionales para cada iteración
+    output_file << "Camino: " << path << "\n";
+    output_file << "S: " << labyrinth.GetStartNode().GetPosString() << "\n";
+    output_file << "E: " << labyrinth.GetEndNode().GetPosString() << "\n";
+
+    // Nodos inspeccionados
+    output_file << "Nodos inspeccionados: ";
+    for (const auto& cell : table.visited) {
+      output_file << "(" << cell.GetIPos() << "," << cell.GetJPos() << ") ";
+    }
+    output_file << "\n";
+
+    // Dibujo del laberinto
+    output_file << "\n" << dibujo << "\n\n";
+
+    // Iteraciones de la ejecución
+    output_file << "Iteraciones: \n\n" << table.iteraciones << "\n\n";
+
+    // Separador entre iteraciones
+    output_file << std::string(50, '-') << "\n\n";
+  }
+
+  // Cerrar el archivo
+  output_file.close();
+  return output_file;
 }

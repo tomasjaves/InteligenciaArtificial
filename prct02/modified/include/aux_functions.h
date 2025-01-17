@@ -58,3 +58,6 @@ void UpdateIfBetter(Cell& node, Cell& current_node,
 // Comprueba si un nodo vecino es inválido para transitar
 bool InvalidNeighbor(Cell& neighbor, Cell& current_node, 
                                      CellVector& closed_nodes);
+
+// MODIFICACION
+std::ofstream StoreSearchModified(Labyrinth& labyrinth, std::string& instance_name);

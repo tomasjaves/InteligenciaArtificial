@@ -293,3 +293,99 @@ Instance Labyrinth::AStarSearch() const {
   std::string iteraciones = iteracion_str.str();
   return Instance{path, generated, closed_nodes, iteraciones, dibujo};
 }
+
+// MODIFICACIONES
+
+Instance Labyrinth::AStarSearchModified() const {
+  std::stringstream iteracion_str;        // Stringstream para almacenar los detalles de las iteraciones
+  CellVector open_nodes{GetStartNode()};  // Nodos abiertos
+  CellVector closed_nodes;                // Nodos cerrados
+  CellVector generated{GetStartNode()};   // Nodos generados
+  Cell current_node = GetStartNode();     // Nodo actual
+  std::vector<std::pair<Cell, Cell>> parents;  // Relación padre-hijo para reconstruir el camino
+
+  // Inicialización del nodo inicial
+  current_node.CalculateHeuristic(GetEndNode(), GetChosenHeuristic());
+  current_node.SetFValue(current_node.GetGValue() + current_node.GetHValue());
+
+  // Detalles de la primera iteración
+  iteracion_str << "Iteración 0\n";
+  iteracion_str << "Nodos generados: (" << current_node.GetIPos() << ", " << current_node.GetJPos() << ")\n";
+  iteracion_str << "Nodos inspeccionados: -\n\n";
+
+  bool path_found = false;  // Indica si se encontró el camino
+
+  // Generador de números aleatorios
+  std::random_device rd;
+  std::mt19937 gen(rd());
+
+  // Bucle principal del algoritmo A*
+  while (!open_nodes.empty()) {
+    // Ordenar los nodos abiertos por f(n)
+    open_nodes = SortByFValue(open_nodes);
+
+    // Seleccionar un nodo al azar entre los tres mejores
+    int top_nodes = std::min(3, (int)open_nodes.size());
+    std::uniform_int_distribution<> dist(0, top_nodes - 1); // Distribución uniforme quiere decir que todos los nodos tienen la misma probabilidad de ser seleccionados
+    int random_index = dist(gen);
+    current_node = open_nodes[random_index];
+    open_nodes.erase(open_nodes.begin() + random_index);  // Eliminar el nodo seleccionado
+
+    // Añadir el nodo actual a los cerrados
+    closed_nodes.push_back(current_node);
+
+    // Comprobar si hemos llegado al nodo final
+    if (current_node.GetKind() == 4) {
+      path_found = true;
+      break;
+    }
+
+    // Explorar los vecinos del nodo actual
+    for (Cell neighbor : GetNeighbors(current_node)) {
+      // Ignorar vecinos inválidos (ya inspeccionados o no transitable)
+      if (InvalidNeighbor(neighbor, current_node, closed_nodes)) continue;
+
+      // Añadir vecinos no inspeccionados a nodos generados
+      if (!IsOpenNode(neighbor, open_nodes)) {
+        // Calcular valores g(n), h(n) y f(n)
+        CalculateValues(neighbor, current_node);
+
+        // Añadir el vecino a nodos abiertos y generados
+        open_nodes.push_back(neighbor);
+        generated.push_back(neighbor);
+
+        // Guardar la relación padre-hijo
+        parents.push_back(std::make_pair(neighbor, current_node));
+      } else {
+        // Actualizar si encontramos un mejor camino
+        UpdateIfBetter(neighbor, current_node, labyrinth_, parents, open_nodes);
+      }
+    }
+
+    // Registrar detalles de la iteración
+    iteracion_str << "Iteración " << closed_nodes.size() << "\n";
+    iteracion_str << "Nodos generados: ";
+    for (const auto& node : generated) {
+      iteracion_str << "(" << node.GetIPos() << "," << node.GetJPos() << ") ";
+    }
+    iteracion_str << "\n";
+    iteracion_str << "Nodos inspeccionados: ";
+    for (const auto& node : closed_nodes) {
+      iteracion_str << "(" << node.GetIPos() << "," << node.GetJPos() << ") ";
+    }
+    iteracion_str << "\n\n";
+  }
+
+  // Construir el camino si se encontró
+  CellVector path;
+  if (path_found) {
+      path = ConstructPath(current_node, GetStartNode(), parents);
+  }
+
+  // Generar el dibujo final del laberinto
+  std::string dibujo = PrintLabyrinth(open_nodes, closed_nodes, current_node, path);
+
+  // Devolver la instancia con los resultados
+  std::string iteraciones = iteracion_str.str();
+  return Instance{path, generated, closed_nodes, iteraciones, dibujo};
+}
