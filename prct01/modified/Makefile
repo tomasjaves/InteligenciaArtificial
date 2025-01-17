@@ -25,7 +25,7 @@ endef
 
 # Regla principal
 all: build $(EXEC)
-	@echo "$(PURPLE)$(BOLD)Compilación completada$(RESET)"
+	@echo "$(PURPLE)$(BOLD)Compilación completada: Ejecutable 'program' creado correctamente.$(RESET)"
 
 # Crear el ejecutable
 $(EXEC): $(OBJ)

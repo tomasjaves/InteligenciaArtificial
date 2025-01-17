@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <limits>
 #include <queue>
+#include <random>
 
 /**
  * @brief Clase que implementa las búsquedas en el grafo.
@@ -24,8 +25,11 @@ class Busqueda {
   // Función para realizar búsqueda en profundidad (DFS)
   static std::vector<Nodo> BusquedaEnProfundidad(const Grafo&, const int&, const int&, int&, std::ofstream&);
 
+  // MODIFICACION
+  // Función para realizar búsqueda en amplitud modificada
+  static std::vector<Nodo> BusquedaEnAmplitudModificada(const Grafo&, const int&, const int&, int&, std::ofstream&);
+
  private:
-  private:
   // Función recursiva “interna” que hace la DFS
   void static DFSRecursivo(const Grafo& grafo,
                     Nodo* nodo_actual,

@@ -55,8 +55,9 @@ void MostrarCamino(const std::vector<Nodo>& camino, double costo_total,
 void MostrarMenu() {
   std::cout << ITALIC << "Menú de opciones:" << RESET << std::endl;
   std::cout << PINK << BOLD << "1." << RESET << " Buscar camino mediante Amplitud." << std::endl;
-  std::cout << PINK << BOLD << "2." << RESET << " Buscar camino mediante Profundidad." << std::endl;
-  std::cout << PINK << BOLD << "3." << RESET << " Salir." << std::endl;
+  std::cout << PINK << BOLD << "2." << RESET << " Buscar camino mediante Amplitud (MODIFICADO)." << std::endl;
+  std::cout << PINK << BOLD << "3." << RESET << " Buscar camino mediante Profundidad." << std::endl;
+  std::cout << PINK << BOLD << "4." << RESET << " Salir." << std::endl;
   std::cout << UNDERLINE << "Opción:" << RESET << " ";
 }
 
@@ -115,10 +116,10 @@ int main() {
   MostrarMenu();
   std::cin >> opcion;
   std::cout << std::endl;
-  if (opcion == 3) {
+  if (opcion == 4) {
     std::cout << RED << "Saliendo del programa." << RESET << std::endl;
     return 0;
-  } else if (opcion != 1 && opcion != 2) {
+  } else if (opcion != 1 && opcion != 2 && opcion != 3) {
     std::cerr << YELLOW << "Opción no válida." << RESET << std::endl;
     return 1;
   }
@@ -188,6 +189,8 @@ int main() {
   if (opcion == 1) {
     nombre_archivo = "output/SalidaAmplitud.txt";
   } else if (opcion == 2) {
+    nombre_archivo = "output/SalidaAmplitudModificada.txt";
+  } else if (opcion == 3) {
     nombre_archivo = "output/SalidaProfundidad.txt";
   } else {
     // Si no hay ninguna opción válida, manejamos el error
@@ -217,6 +220,8 @@ int main() {
   if (opcion == 1) { // Búsqueda en amplitud.
     camino = Busqueda::BusquedaEnAmplitud(*grafo, origen-1, destino-1, costo_total, archivo_salida);
   } else if (opcion == 2) { // Búsqueda en profundidad.
+    camino = Busqueda::BusquedaEnAmplitudModificada(*grafo, origen-1, destino-1, costo_total, archivo_salida);
+  } else if (opcion == 3) {
     camino = Busqueda::BusquedaEnProfundidad(*grafo, origen-1, destino-1, costo_total, archivo_salida);
   }
 
@@ -226,6 +231,8 @@ int main() {
   if (opcion == 1) {
     std::cout << GREEN << BOLD << "'output/SalidaAmplitud.txt'." << RESET << std::endl;
   } else if (opcion == 2) {
+    std::cout << GREEN << BOLD << "'output/SalidaAmplitudModificada.txt'." << RESET << std::endl;
+  } else if (opcion == 3) {
     std::cout << GREEN << BOLD << "'output/SalidaProfundidad.txt'." << RESET << std::endl;
   }
   std::cout << TURQUOISE << ITALIC "Archivo de información del grafo " << RESET << TURQUOISE << BOLD << "'output/InformacionGrafo.txt'." << RESET << std::endl << std::endl;

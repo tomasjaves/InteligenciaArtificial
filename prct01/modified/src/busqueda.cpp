@@ -305,3 +305,186 @@ void Busqueda::DFSRecursivo(const Grafo& grafo,
   //    lo quitamos del “camino actual” (backtracking)
   camino_actual.pop_back();
 }
+
+// MODIFICACION
+
+/**
+ * @brief Función para realizar la búsqueda en amplitud modificada.
+ * 
+ * @param grafo 
+ * @param id_inicial 
+ * @param id_final 
+ * @param costo_total 
+ * @param fichero_salida
+ * @return std::vector<int> El camino encontrado
+ */
+std::vector<Nodo> Busqueda::BusquedaEnAmplitudModificada(const Grafo& grafo,
+                                              const int& id_inicial,
+                                              const int& id_final,
+                                              int& costo_total,
+                                              std::ofstream& fichero_salida)
+{
+  // Semilla para aleatoriedad (puede ajustarse según se necesite,
+  // o simplemente usar el random_device).
+  static std::mt19937 generador(std::random_device{}());
+
+  // 1) Creamos el nodo inicial
+  Nodo nodo_inicial;
+  nodo_inicial.SetID(id_inicial);
+  nodo_inicial.SetPosPadre(-1);    // No tiene padre (es la raíz)
+  nodo_inicial.SetCoste(0);        // Coste hasta sí mismo = 0
+  nodo_inicial.SetPadre(nullptr);
+
+  // Estructuras auxiliares para la traza
+  std::vector<Nodo> generados;         // Nodos generados
+  std::vector<Nodo> inspeccionados;    // Nodos que hemos “expandido”
+  generados.push_back(nodo_inicial);
+
+  // En la búsqueda tradicional, usaríamos una cola (FIFO).
+  // En esta versión, usaremos un “contenedor de frontera” (vector)
+  // que iremos filtrando por el 50% con menor coste acumulado.
+  std::vector<Nodo> frontera;
+  frontera.push_back(nodo_inicial);
+
+  // Estructura donde iremos guardando todos los nodos para poder
+  // reconstruir la ruta al final (igual que en BFS normal).
+  std::vector<Nodo> recorrido;  // “recorrido” es la memoria global de nodos
+  recorrido.push_back(nodo_inicial);
+
+  // Variables para controlar la traza e iteraciones
+  int iteracion = 1;
+  bool encontrado = false;
+  int posicion_destino = -1;
+
+  fichero_salida << "Iteración " << iteracion++ << std::endl;
+  InformacionNodosGenerados(generados, fichero_salida);
+  InformacionNodosInspeccionados(inspeccionados, fichero_salida);
+
+  // Bucle principal: mientras haya nodos en la frontera
+  while (!frontera.empty()) {
+    // Si sólo hay un nodo en frontera , lo inspeccionamos directamente.
+    Nodo nodo_actual;
+    if (frontera.size() == 1) {
+      nodo_actual = frontera.front();
+    } 
+    else {
+      // Si hay más de un nodo, elegimos el 50% con menor coste.
+
+      // Ordenar la frontera por coste acumulado (menor a mayor)
+      std::sort(frontera.begin(), frontera.end(), [](const Nodo& a, const Nodo& b) { // comparador “lambda” inline
+        return a.GetCoste() < b.GetCoste();
+      });
+
+      // Calcular hasta dónde tomar el “mejor 50%”.
+      size_t mitad = frontera.size() / 2; // división entera
+      if (mitad == 0) mitad = 1;         // asegurar al menos 1
+
+      // Generar un índice aleatorio entre [0, mitad - 1]
+      std::uniform_int_distribution<size_t> dist(0, mitad - 1);
+      size_t idx_aleatorio = dist(generador);
+
+      // Elegir ese nodo
+      nodo_actual = frontera[idx_aleatorio];
+    }
+
+    // Retirarlo de la frontera
+    auto it = std::find_if(frontera.begin(), frontera.end(), [&](const Nodo& nd){
+      return nd.GetID() == nodo_actual.GetID() && nd.GetPosPadre() == nodo_actual.GetPosPadre();
+    });
+    if (it != frontera.end()) frontera.erase(it);
+
+    // Lo anotamos en inspeccionados
+    inspeccionados.push_back(nodo_actual);
+
+    // Comprobamos si es el destino
+    if (nodo_actual.GetID() == id_final) {
+      // Marcamos encontrado y reservamos su posición en “recorrido”
+      encontrado = true;
+
+      // Encontrar la posición en ‘recorrido’ de este nodo para luego
+      // reconstruir el camino
+      for (size_t i = 0; i < recorrido.size(); ++i) {
+        if (recorrido[i].GetID() == nodo_actual.GetID() &&
+            recorrido[i].GetPosPadre() == nodo_actual.GetPosPadre()) {
+          posicion_destino = i;
+          break;
+        }
+      }
+
+      // Imprimimos la traza final y rompemos
+      fichero_salida << "Iteración " << iteracion++ << std::endl;
+      InformacionNodosGenerados(generados, fichero_salida);
+      InformacionNodosInspeccionados(inspeccionados, fichero_salida);
+      break;
+    }
+
+    // Expandir al nodo actual generando sus hijos
+    const auto& vecinos = grafo.GetMatrizCoste()[nodo_actual.GetID()];
+    for (int i = 0; i < (int)vecinos.size(); ++i) {
+      if (vecinos[i] != -1 && i != nodo_actual.GetID()) {
+        // Crear el nuevo nodo (hijo)
+        Nodo nuevo_nodo;
+        nuevo_nodo.SetID(i);
+
+        // El coste acumulado es el coste del padre + el coste de la arista
+        int nuevo_coste = nodo_actual.GetCoste() + vecinos[i];
+        nuevo_nodo.SetCoste(nuevo_coste);
+
+        // Guardamos la traza del padre
+        int pos_padre = -1;
+        for (size_t idx = 0; idx < recorrido.size(); ++idx) {
+          if (recorrido[idx].GetID() == nodo_actual.GetID() &&
+              recorrido[idx].GetPosPadre() == nodo_actual.GetPosPadre()) {
+            pos_padre = (int)idx;
+            break;
+          }
+        }
+        nuevo_nodo.SetPosPadre(pos_padre);
+        nuevo_nodo.SetPadre(nullptr); // para la reconstrucción
+
+        // Antes de añadir a la frontera, comprobamos si YA estaba en 'recorrido'
+        // con un coste menor o igual; si es así, no generamos duplicado.
+        bool mejor_o_igual_en_recorrido = false;
+        for (auto& r : recorrido) {
+          if (r.GetID() == nuevo_nodo.GetID()) {
+            // Si ya está en recorrido con coste menor o igual, no lo insertamos
+            if (r.GetCoste() <= nuevo_nodo.GetCoste()) {
+              mejor_o_igual_en_recorrido = true;
+              break;
+            }
+          }
+        }
+
+        // Si no se ha encontrado uno mejor en recorrido, lo añadimos
+        if (!mejor_o_igual_en_recorrido) {
+          frontera.push_back(nuevo_nodo);
+          generados.push_back(nuevo_nodo);
+          recorrido.push_back(nuevo_nodo);
+        }
+      }
+    }
+
+    // Imprimimos la traza tras esta expansión
+    fichero_salida << "Iteración " << iteracion++ << std::endl;
+    InformacionNodosGenerados(generados, fichero_salida);
+    InformacionNodosInspeccionados(inspeccionados, fichero_salida);
+  } // fin while(!frontera.empty())
+
+  // Si hemos salido del bucle y el destino fue encontrado, reconstruimos la ruta
+  std::vector<Nodo> ruta;
+  costo_total = 0;
+
+  if (encontrado && posicion_destino != -1) {
+    int pos_actual = posicion_destino;
+    // Reconstruimos y acumulamos coste
+    while (pos_actual != -1) {
+      ruta.push_back(recorrido[pos_actual]);
+      costo_total += recorrido[pos_actual].GetCoste();
+      pos_actual = recorrido[pos_actual].GetPosPadre();
+    }
+    costo_total = ruta.front().GetCoste(); 
+    std::reverse(ruta.begin(), ruta.end());
+  }
+
+  return ruta;
+}
