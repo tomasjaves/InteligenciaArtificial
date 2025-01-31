@@ -32,7 +32,7 @@ make
 Para limpiar los archivos compilados:
 
 ```bash
-make reset
+make clean
 ```
 
 ## Uso
